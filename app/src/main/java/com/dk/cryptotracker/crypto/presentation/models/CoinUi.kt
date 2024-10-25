@@ -3,9 +3,8 @@ package com.dk.cryptotracker.crypto.presentation.models
 import android.icu.text.NumberFormat
 import androidx.annotation.DrawableRes
 import com.dk.cryptotracker.crypto.domain.Coin
-import com.dk.cryptotracker.util.getDrawableIdForCoin
+import com.dk.cryptotracker.core.presentation.util.getDrawableIdForCoin
 import java.util.Locale
-import kotlin.math.min
 
 data class CoinUi(
     val id: String,
