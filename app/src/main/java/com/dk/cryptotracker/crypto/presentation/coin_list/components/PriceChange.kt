@@ -56,7 +56,7 @@ fun PriceChange(
         )
 
         Text(
-            text = "${change.value} %",
+            text = "${change.formatted} %",
             color = contentColour,
             fontSize = 14.sp,
             fontWeight = FontWeight.Medium
