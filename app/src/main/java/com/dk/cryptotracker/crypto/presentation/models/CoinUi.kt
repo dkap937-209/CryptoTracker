@@ -40,7 +40,6 @@ fun Double.toDisplayableNumber(): DisplayableNumber {
         minimumFractionDigits = 2
         maximumFractionDigits = 2
     }
-    println("Formatted number: ${formatter.format(this)}")
     return DisplayableNumber(
         value = this,
         formatted = formatter.format(this)
