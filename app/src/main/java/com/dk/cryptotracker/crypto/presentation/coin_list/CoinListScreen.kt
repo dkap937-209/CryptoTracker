@@ -34,6 +34,7 @@ import kotlinx.coroutines.withContext
 @Composable
 fun CoinListScreen(
     modifier: Modifier = Modifier,
+    onAction: (CoinListAction) -> Unit,
     state: CoinListState
 ) {
 
@@ -57,7 +58,9 @@ fun CoinListScreen(
                 CoinListItem(
                     modifier = Modifier.fillMaxSize(),
                     coinUi = coinUi,
-                    onClick = { /*TODO*/ }
+                    onClick = {
+                        onAction(CoinListAction.OnCoinClick(coinUi))
+                    }
                 )
                 HorizontalDivider()
             }
@@ -75,7 +78,8 @@ private fun CoinListScreenPreview() {
                     previewCoin.copy(id = it.toString())
                 }
             ),
-            modifier = Modifier.background(MaterialTheme.colorScheme.background)
+            modifier = Modifier.background(MaterialTheme.colorScheme.background),
+            onAction = {}
         )
     }
 }
