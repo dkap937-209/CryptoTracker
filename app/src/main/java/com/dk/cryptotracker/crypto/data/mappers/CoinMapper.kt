@@ -24,6 +24,6 @@ fun CoinPriceDto.toCoinPrice(): CoinPrice {
         priceUsd = priceUsd,
         dateTime = Instant
             .ofEpochSecond(time)
-            .atZone(ZoneId.of("UTC"))
+            .atZone(ZoneId.systemDefault())
     )
 }

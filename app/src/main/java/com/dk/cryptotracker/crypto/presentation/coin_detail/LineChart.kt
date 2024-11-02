@@ -3,6 +3,7 @@ package com.dk.cryptotracker.crypto.presentation.coin_detail
 import android.provider.ContactsContract.Data
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
@@ -20,6 +21,7 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.draw
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
@@ -30,6 +32,8 @@ import com.dk.cryptotracker.crypto.domain.CoinPrice
 import com.dk.cryptotracker.ui.theme.CryptoTrackerTheme
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import kotlin.io.path.Path
+import kotlin.io.path.moveTo
 import kotlin.math.roundToInt
 import kotlin.random.Random
 
@@ -85,6 +89,23 @@ fun LineChart(
     Canvas(
         modifier = modifier
             .fillMaxSize()
+            .pointerInput(drawPoints, xLabelWidth) {
+                detectHorizontalDragGestures { change, _ ->
+                    val newSelectedDataPointIndex = getSelectedDataPointIndex(
+                        touchOffsetX = change.position.x,
+                        triggerWidth = xLabelWidth,
+                        drawPoints = drawPoints
+                    )
+                    isShowingDataPoints = (newSelectedDataPointIndex + visibleDataPointIndices.first) in
+                            visibleDataPointIndices
+
+                    if(isShowingDataPoints) {
+                        onSelectedDataPoint(
+                            dataPoints[newSelectedDataPointIndex]
+                        )
+                    }
+                }
+            }
     ) {
         val minLabelSpacingYPx = style.minYLabelSpacing.toPx()
         val verticalPaddingPx = style.verticalPadding.toPx()
@@ -132,18 +153,6 @@ fun LineChart(
         val viewPortRightX = size.width
         val viewPortBottomY = viewPortTopY + viewPortHeightPx
         val viewPortLeftX = 2f * horizontalPaddingPx + maxYLabelWidth
-        val viewPort = Rect(
-            left = viewPortLeftX,
-            top = viewPortTopY,
-            right = viewPortRightX,
-            bottom = viewPortBottomY
-        )
-
-        drawRect(
-            color = Color.Green.copy(alpha = 0.3f),
-            topLeft = viewPort.topLeft,
-            size = viewPort.size
-        )
 
         xLabelWidth = maxXLabelWidth + xAxisLabelSpacingPx
         xLabelTextLayoutResults.forEachIndexed { index, result ->
@@ -264,6 +273,47 @@ fun LineChart(
             )
         }
 
+        val conPoints1 = mutableListOf<DataPoint>()
+        val conPoints2 = mutableListOf<DataPoint>()
+
+        for(i in 1 until drawPoints.size){
+            val p0 = drawPoints[i-1]
+            val p1 = drawPoints[i]
+
+            val x = (p1.x + p0.x) / 2f
+            val y1 = p0.y
+            val y2 = p1.y
+
+            conPoints1.add(DataPoint(x, y1, ""))
+            conPoints2.add(DataPoint(x, y2, ""))
+        }
+
+        val linePath = androidx.compose.ui.graphics.Path().apply {
+            if(drawPoints.isNotEmpty()) {
+                moveTo(drawPoints.first().x, drawPoints.first().y)
+
+                for(i in 1 until drawPoints.size) {
+                    cubicTo(
+                        x1 = conPoints1[i-1].x,
+                        y1 = conPoints1[i-1].y,
+                        x2 = conPoints2[i-1].x,
+                        y2 = conPoints2[i-1].y,
+                        x3 = drawPoints[i].x,
+                        y3 = drawPoints[i].y
+                    )
+                }
+            }
+        }
+
+        drawPath(
+            path = linePath,
+            color = style.chartLineColour,
+            style = Stroke(
+                width = 5f,
+                cap = androidx.compose.ui.graphics.StrokeCap.Round
+            )
+        )
+
         drawPoints.forEachIndexed { index, point ->
             if(isShowingDataPoints) {
 
@@ -296,6 +346,19 @@ fun LineChart(
         }
 
     }
+}
+
+private fun getSelectedDataPointIndex(
+    touchOffsetX: Float,
+    triggerWidth: Float,
+    drawPoints: List<DataPoint>
+): Int {
+    val triggerRangeLeft = touchOffsetX - triggerWidth / 2f
+    val triggerRangeRight = touchOffsetX + triggerWidth / 2f
+    return drawPoints.indexOfFirst {
+        it.x in triggerRangeLeft..triggerRangeRight
+    }
+
 }
 
 @Preview(widthDp = 1000)
