@@ -18,6 +18,6 @@ data class ValueLabel(
             minimumFractionDigits = 0
         }
 
-        return "${formatter.format(value)}$unit"
+        return "$unit${formatter.format(value)}"
     }
 }
