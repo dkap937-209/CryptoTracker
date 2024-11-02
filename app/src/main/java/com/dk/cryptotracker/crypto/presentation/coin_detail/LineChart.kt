@@ -1,5 +1,6 @@
 package com.dk.cryptotracker.crypto.presentation.coin_detail
 
+import android.provider.ContactsContract.Data
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
@@ -247,6 +248,50 @@ fun LineChart(
                     ),
                     strokeWidth = style.helperLinesThicknessPx
                 )
+            }
+        }
+
+        drawPoints = visibleDataPointIndices.map {
+            val x = viewPortLeftX + (it - visibleDataPointIndices.first) *
+                    xLabelWidth + xLabelWidth /2f
+
+            val ratio = (dataPoints[it].y - minY) / (maxY - minY)
+            val y = viewPortBottomY - (ratio * viewPortHeightPx)
+            DataPoint(
+                x = x,
+                y = y,
+                xLabel = dataPoints[it].xLabel
+            )
+        }
+
+        drawPoints.forEachIndexed { index, point ->
+            if(isShowingDataPoints) {
+
+                val circleOffset = Offset(
+                    x = point.x,
+                    y = point.y
+                )
+                drawCircle(
+                    color = style.selectedColour,
+                    radius = 10f,
+                    center = circleOffset
+                )
+
+                if(selectedDataPointIndex == index) {
+                    drawCircle(
+                        color = Color.White,
+                        radius = 15f,
+                        center = circleOffset
+                    )
+                    drawCircle(
+                        color = style.selectedColour,
+                        radius = 15f,
+                        center = circleOffset,
+                        style = Stroke(
+                            width = 3f
+                        )
+                    )
+                }
             }
         }
 
